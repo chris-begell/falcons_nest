@@ -241,7 +241,7 @@ def tourney():
     )
     lead_teams = tk.Frame(tournament, background='red4'
     )
-    scoring_grid = tk.Frame(tournament, background='red4'
+    scoring_grid = tk.Frame(tournament, background='white'
     )
     
     leaders.grid(column=0, columnspan=2, row=0, rowspan=3)
@@ -259,7 +259,7 @@ def tourney():
     size= 50, weight='bold'
     )
     copperplate_small = font.Font(family='Copperplate',
-    size=16, weight='bold'
+    size=12, weight='bold'
     )   
     place_1 = tk.Label(leaders, background='red4', foreground='white',
     justify='right', font=copperplate, text="FIRST PLACE" 
@@ -296,53 +296,66 @@ def tourney():
             random.shuffle(players_selected)
             print(players_selected)
             num_teams = len(players_selected)/2
+            num_games = num_teams - 1
             print(f"There are {int(num_teams)} teams for this tournament.")
+            print(f"Each team will play {int(num_games)} games.")
             for number in range(0, int(num_teams)):
                 teams.append({int(number):[players_selected.pop(0), players_selected.pop()]})
             for dic in teams:
                 return teams
-                    
+                   
                     
     players_select()
 
     print(f'these are the teams: {teams}')
-    def grid_layout():
-        grid_height = (len(teams))
-        grid_width = (len(teams))
-        for i in range(int(grid_height)):
-            for j in range(int(grid_width)+2):
-                b = tk.Entry(scoring_grid,background='white')
-                b.grid(row=i, column=j)
-                
-                
-    grid_layout()
-    
-    
-    
-    def labls():
-        for val in teams:
-    
-                for key in val.keys():
-                    lt = key
-                    rza = key
-                    print(lt)
-                    for value in val.values():
-                        pt = (f"{value[1]} / {value[0]}")
-                        lt = tk.Label(scoring_grid,text=pt, background='red4', foreground='white', 
-                        font=copperplate_small, anchor='e')
-        
-                        lt.grid(column=0, row=rza,)
+    # def grid_layout():
+    #     grid_height = (len(teams))
+    #     grid_width = (len(teams))
+    #     for i in range(int(grid_height)):
+    #         print(i)
+    #         for j in range(int(grid_width)+1):
+    #             b = tk.Entry(scoring_grid,background='white', foreground='red4',
+    #                          font=copperplate_small
+    #             )
+            
+                # b.grid(row=i, column=j, ipady=5)
 
+                
+
+
+                            
+
+                
                     
+                
+                
 
-                   
-
-        
+    
     
 
-        
+    
+    # def labls():
+    #     for val in teams:    
+    #             for key in val.keys():
+    #                 lt = key
+    #                 st = int(len(teams))
+    #                 rza = key
+    #                 print(f"{lt},{st}")
+    #                 for value in val.values():
+    #                     pt = (f"{value[1]} / {value[0]}")
+    #                     lt = tk.Label(scoring_grid,text=pt, 
+    #                     foreground='red4', background='white', 
+    #                     font=copperplate_small, anchor='e'
+    #                     )
+                        
+    #                     lt.grid(column=0, row=rza,)
+                        
+                        
+                
+    
+    # labls()
+   
 
-    labls()
           
     
     
