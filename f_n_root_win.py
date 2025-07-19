@@ -14,6 +14,9 @@ from datetime import datetime
 from pathlib import Path
 import json
 import random
+from collections import OrderedDict
+import gc
+import weakref
 
 
 
@@ -35,13 +38,8 @@ root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}'
 root.columnconfigure(1, weight=2)
 root.columnconfigure(2, weight=1)
 root.columnconfigure(3, weight=3)
-root.rowconfigure(1, weight=1)
-root.rowconfigure(2, weight=1)
-root.rowconfigure(3, weight=1)
-root.rowconfigure(4, weight=1)
-root.rowconfigure(5, weight=1)
-root.rowconfigure(6, weight=1)
-root.rowconfigure(7, weight=1)
+root.rowconfigure([1,2,3,4,5,6,7], weight=1)
+
 
 root.iconbitmap('polish-falcon-icon.ico')
 root.title("Falcon's Nest Euchre Tournament")
@@ -209,44 +207,18 @@ def tourney():
     center_y = int(screen_height/2-window_height/2)
     tournament.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}'
     )
-    tournament.columnconfigure(0, weight=1)
-    tournament.columnconfigure(1, weight=1)
-    tournament.columnconfigure(2, weight=1)
-    tournament.columnconfigure(3, weight=1)
-    tournament.columnconfigure(4, weight=1)
-    tournament.columnconfigure(5, weight=1)
-    tournament.columnconfigure(6, weight=1)
-    tournament.columnconfigure(7, weight=1)
-    tournament.columnconfigure(8, weight=1)
-    tournament.columnconfigure(9, weight=1)
-    tournament.columnconfigure(10, weight=1)
-    tournament.columnconfigure(11, weight=1)
-    tournament.rowconfigure(0, weight=1)
-    tournament.rowconfigure(1, weight=1)
-    tournament.rowconfigure(2, weight=1)
-    tournament.rowconfigure(3, weight=1)
-    tournament.rowconfigure(4, weight=1)
-    tournament.rowconfigure(5, weight=1)
-    tournament.rowconfigure(6, weight=1)
-    tournament.rowconfigure(7, weight=1)
-    tournament.rowconfigure(8, weight=1)
-    tournament.rowconfigure(9, weight=1)
-    tournament.rowconfigure(10, weight=1)
-    tournament.rowconfigure(11, weight=1)
+    tournament.columnconfigure([0,1,2,3,4,5,6,7,8,9,10,11], weight=1
+    )    
+    tournament.rowconfigure([0,1,2,3,4,5,6,7,8,9,10,11], weight=1
+    )
+    
     tournament.configure(background='red4',border=0)
     tournament.title("Falcon's Nest Tournament")
     tournament.iconbitmap('polish-falcon-icon.ico')
     
-    leaders = tk.Frame(tournament, background='red4'
-    )
-    lead_teams = tk.Frame(tournament, background='red4'
-    )
     scoring_grid = tk.Frame(tournament, background='white'
     )
-    
-    leaders.grid(column=0, columnspan=2, row=0, rowspan=3)
-    lead_teams.grid(column=3, columnspan=8, row=0, rowspan=3)
-    scoring_grid.grid(column=0, columnspan=12, row=4, rowspan=9)
+    scoring_grid.grid(column=0, columnspan=12, row=0, rowspan=9)
     
     
     
@@ -261,20 +233,7 @@ def tourney():
     copperplate_small = font.Font(family='Copperplate',
     size=12, weight='bold'
     )   
-    place_1 = tk.Label(leaders, background='red4', foreground='white',
-    justify='right', font=copperplate, text="FIRST PLACE" 
-    )
-    place_2 = tk.Label(leaders, background='red4',
-    foreground='white', justify='right', text="SECOND PLACE",
-    font= copperplate 
-    )
-    place_3 = tk.Label(leaders, background='red4',
-    foreground='white', justify='right',font= copperplate, 
-    text='THIRD PLACE'
-    )
-    place_1.pack(side='top', anchor=tk.W)
-    place_2.pack(side='top', anchor=tk.W)
-    place_3.pack(side='top', anchor=tk.W)
+    copperplate_medium = font.Font(family='Copperplate', size=20, weight='bold')
 
    # <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
    # ||||||||||||||||||||  TOURNAMENT FUNCTIONS  ||||||||||||||||||||||||
@@ -294,110 +253,89 @@ def tourney():
             tournament.destroy()
         else:
             random.shuffle(players_selected)
-            print(players_selected)
+            # print(players_selected)
             num_teams = len(players_selected)/2
             num_games = num_teams - 1
-            print(f"There are {int(num_teams)} teams for this tournament.")
-            print(f"Each team will play {int(num_games)} games.")
+            # print(f"There are {int(num_teams)} teams for this tournament.")
+            # print(f"Each team will play {int(num_games)} games.")
             for number in range(0, int(num_teams)):
                 teams.append({int(number):[players_selected.pop(0), players_selected.pop()]})
-            # for dic in teams:
-            #     return teams
-            # for val in teams:    
-            #     # for key in val.keys():
-            #     #     team_name = key
-            #     for value in val.values():
-            #         team_name = (f"{value[1]} / {value[0]}")
-            #         return team_name 
+            
                    
     players_select()
-    def labls():
-       for val in teams:    
-               for key in val.keys():
-                   lt = key
-                   st = int(len(teams))
-                   rza = key
-                   print(f"{lt},{st}")
-                   for value in val.values():
-                       team_name = (f"{value[1]} / {value[0]}") 
-                       print(team_name)
-    labls()               
+    
     class Team:
+        
         def __init__(self, parent, team_name):
             cols, row_num = parent.grid_size()
-            score_col = len(teams) + 2
-
+            score_col = len(teams)
+            
             # team name label
             lt = tk.Label(parent,text=team_name,foreground='red4',
                 background='white', anchor='e', padx=2, pady=5,
-                font=copperplate_small
+                font=copperplate_medium
             )
-            team_name.grid(row=row_num, column=0)
+            lt.grid(row=row_num, column=0)
+            
 
             # entry columns
             self.team_scores = []
             for j in range(len(teams)):
                 var = tk.StringVar()
-                b = tk.Entry(parent, textvariable=var, background='white', foreground='red4')
-                b.grid(row=row_num, column=j+1, ipady=2)
+                b = tk.Entry(parent, textvariable=var, background='white', foreground='red4',
+                font=copperplate_medium
+                )
+                b.grid(row=row_num, column=j+1, ipady=5)
                 var.trace_add('write', self.calculate) # run the calculate method when the variable changes
                 self.team_scores.append(var)
-
+                
+                
+                
+                
+                
             # score label
             self.score_lbl = tk.Label(parent,text=0,foreground='red4',
-                background='white', anchor='e', padx=2, pady=2)
+                background='white', anchor='e', padx=5, pady=5,
+                font=copperplate_medium
+                )
             self.score_lbl.grid(row=row_num, column=score_col, sticky='ew')
 
         def calculate(self, *args):
             total = sum(int(b.get() or 0) for b in self.team_scores)
             self.score_lbl.config(text=total)
-
-
-    print(f'these are the teams: {teams}')
-    for team in teams:
-                
-        Team(scoring_grid, team)        
-    
-    
-    
-    
-    
-    # players_select()          
-
-    # print(f'these are the teams: {teams}')
-    # def grid_layout():
-    #     grid_height = (len(teams))
-    #     grid_width = (len(teams))
-    #     for i in range(int(grid_height)):
-    #         print(i)
-    #         for j in range(int(grid_width)+1):
-    #             b = tk.Entry(scoring_grid,background='white', foreground='red4',
-    #                          font=copperplate_small
-    #             )
             
-    #             b.grid(row=i, column=j, ipady=5)
-    # grid_layout()
+            
+            
+               
+            
+        
+            
+        
+        
+        
+            
+            
+            
+    
+    for team in teams:
+    
+        for value in team.values():
+            team_name = (f"{value[1]} / {value[0]}")
                 
+        Team(scoring_grid, team_name)
 
-    # def labls():
-    #     for val in teams:    
-    #             for key in val.keys():
-    #                 lt = key
-    #                 st = int(len(teams))
-    #                 rza = key
-    #                 print(f"{lt},{st}")
-    #                 for value in val.values():
-    #                     pt = (f"{value[1]} / {value[0]}")
-    #                     lt = tk.Label(scoring_grid,text=pt, 
-    #                     foreground='red4', background='white', 
-    #                     font=copperplate_small, anchor='e', padx=20, pady=5
-    #                     )
-                        
-    #                     lt.grid(row=rza, column=0,)
-                        
-                        
-    # labls()
+   
+     
 
+    
+
+
+
+    
+        
+
+    
+    
                             
 
                 
@@ -410,45 +348,7 @@ def tourney():
 
     
 
-    # def score_entry():
-    #     for val in teams:
-    #         for key in val.keys():
-    #             rza = key
-    #             game = int(len(teams))-1
-    #             print(f"rza={rza}, game={game}")
-    #             for gm in range(int(game)):
-    #                 ad_rock = gm
-    #                 ad_rock = tk.Entry(scoring_grid,
-    #                 background='white', foreground='red4'
-    #                 )
-
-    #                 ad_rock.grid(row=rza, column=1)    
-                
-    # score_entry()
-
-    # def score_button():
-    #     for val in teams:
-    #         for key in val.keys():
-    #             rza = key
-    #             bn = rza
-    #             bn = tk.Button(scoring_grid, background='red4',
-    #             foreground='white', font=copperplate_small, 
-    #             text=f'Enter Score\nGame 1'
-    #             )      
-    #             bn.grid(row=rza, column=2,)
-    # score_button()
-    # number_of_games = []
-    # def enter_scores():
-    #     for val in teams:
-    #         for key in val.keys():
-                
-    #             rza = key
-    #             number_of_games.append(rza)
-    #             game = int(len(teams))-1
-    #     num_games = number_of_games[1:]
-    #     # return(num_games)
-    #     print(num_games)
-    # enter_scores() 
+   
     
 
     
